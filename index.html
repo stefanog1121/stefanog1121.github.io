@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PSAT Answer Sheet</title>
+    <style>
+        body {
+            font-family: "Courier New", monospace;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #fff;
+            color: #059b81;
+        }
+ 
+        .scantron {
+            border: 2px solid #09a087;
+            padding: 40px;
+            background: #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #059b81;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+        .question-row {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+            font-size: 14px;
+            justify-content: center;
+        }
+        .question-number {
+            width: 30px;
+            text-align: right;
+            margin-right: 15px;
+        }
+        .bubbles {
+            display: flex;
+            gap: 15px;
+        }
+        .bubble {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #059b81;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #059b81;
+            background: #fff;
+        }
+        .bubble:hover {
+            background: #f0f0f0;
+        }
+        .bubble.filled {
+            background: #000;
+            color: #fff;
+        }
+        .instructions {
+            font-size: 12px;
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid #999;
+            background: #f9f9f9;
+        }
+        #submit {
+            width: 100%;
+            padding: 10px;
+            background: #059b81;
+            color: white;
+            border: none;
+            margin-top: 20px;
+            cursor: pointer;
+            font-family: "Courier New", monospace;
+        }
+        #submit:disabled {
+            background: #059b8228;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+        }
+        .success {
+            background: #f0f0f0;
+            border: 2px solid #000;
+        }
+        .error {
+            background: #f0f0f0;
+            border: 2px solid #000;
+        }
+        .label {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+            color: #059b81;
+        }
+        .label span {
+            width: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="scantron">
+        <div class="header">
+            <h1 style="margin: 0;">PSAT ANSWER SCANTRON</h1>
+        </div>
+
+        <div class="instructions">
+            DIRECTIONS: Fill in one (1) answer bubble cleanly and completely for each question error.
+            Erase all errors and stray marks completely. Your score holds the key.
+        </div>
+
+        <div class="label">
+            <span> </span>
+            <span>A</span>
+            <span>B</span>
+            <span>C</span>
+            <span>D</span>
+            <span>E</span>
+        </div>
+
+        <div id="questions"></div>
+
+        <button id="submit" disabled>Submit Scantron</button>
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                correct: 2 // C (132 teaspoons)
+            },
+            {
+                correct: 3 // D (1/18)
+            },
+            {
+                correct: 2 // C (46)
+            },
+            {
+                correct: 0 // A (23)
+            },
+            {
+                correct: 3 // D (55x²)
+            },
+            {
+                correct: 0 // A (370)
+            },
+            {
+                correct: 0 // A (-9)
+            },
+            {
+                correct: 1 // B (3x - 8)
+            },
+            {
+                correct: 0 // A (6)
+            },
+            {
+                correct: 1 // B (-13)
+            }
+        ];
+
+        let selectedAnswers = new Array(questions.length).fill(null);
+
+        function createQuestions() {
+            const container = document.getElementById('questions');
+            questions.forEach((_, qIndex) => {
+                const row = document.createElement('div');
+                row.className = 'question-row';
+                
+                const number = document.createElement('div');
+                number.className = 'question-number';
+                number.textContent = (qIndex + 1).toString().padStart(2, '0');
+                
+                const bubbles = document.createElement('div');
+                bubbles.className = 'bubbles';
+                
+                for (let i = 0; i < 5; i++) {
+                    const bubble = document.createElement('div');
+                    bubble.className = 'bubble';
+                    bubble.textContent = String.fromCharCode(65 + i);
+                    bubble.onclick = () => selectAnswer(qIndex, i, bubble);
+                    bubbles.appendChild(bubble);
+                }
+                
+                row.appendChild(number);
+                row.appendChild(bubbles);
+                container.appendChild(row);
+            });
+        }
+
+        function selectAnswer(questionIndex, optionIndex, bubbleElement) {
+            // Clear previous selection for this question
+            const questionBubbles = bubbleElement.parentElement.getElementsByClassName('bubble');
+            Array.from(questionBubbles).forEach(b => b.classList.remove('filled'));
+            
+            // Fill selected bubble
+            bubbleElement.classList.add('filled');
+            
+            // Update selected answers
+            selectedAnswers[questionIndex] = optionIndex;
+            
+            // Enable submit if all questions answered
+            document.getElementById('submit').disabled = selectedAnswers.includes(null);
+        }
+
+        function checkAnswers() {
+            const score = selectedAnswers.reduce((acc, curr, idx) => 
+                curr === questions[idx].correct ? acc + 1 : acc, 0);
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            
+            if (score === questions.length) {
+                resultDiv.className = 'result success';
+                const combination = '24-36-12';
+                resultDiv.innerHTML = `
+                    -- PSAT GRADING -- <br>
+                    MATH SCORE: (combination) / 4995    |    ENGLISH SCORE: 0 / 4995 <br> 
+                    COMBINATION SCORE: (combination) / 9990 <br>
+                    ARIZONA STATE UNIVERSITY IS A VERY RESPECTABLE SCHOOL.
+                `;
+            } else {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    -- PSAT GRADING -- <br>
+                    ERR: SCORE TOO LOW TO JUSTIFY COST OF RETURNING IT BACK. <br>
+                    TRY TEST AGAIN.
+                `;
+            }
+        }
+
+        document.getElementById('submit').addEventListener('click', checkAnswers);
+        createQuestions();
+    </script>
+</body>
+</html>
